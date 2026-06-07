@@ -314,6 +314,8 @@ debug_outputs\auto_crop_preview.png         # 自动裁剪预览
 debug_outputs\manual_crop_preview.png       # 手动区域内裁剪预览
 debug_outputs\cropped_board.png             # 真正用于识别的棋盘图
 debug_outputs\last_recognition_grid_preview.png
+debug_outputs\point_crops\                  # 90 个交叉点的识别裁剪小图
+debug_outputs\point_crops_preview.png       # 90 个裁剪小图总览
 debug_outputs\recognized_board.txt
 debug_outputs\match_details.txt
 debug_outputs\bestmove_chinese.txt
@@ -324,9 +326,31 @@ debug_outputs\bestmove_preview.png
 
 - `cropped_board.png`：裁剪出来的棋盘是否正确。
 - `last_recognition_grid_preview.png`：红点是否落在交叉点中心。
+- `point_crops/`：每个交叉点实际送去识别的小图。
+- `point_crops_preview.png`：把 90 个识别小图按 10 行 × 9 列排成一张总览图。
 - `recognized_board.txt`：棋子矩阵是否识别正确。
 - `match_details.txt`：每个已识别棋子的匹配分数和模板来源。
 - `bestmove_preview.png`：带箭头的最佳走法示意图。
+
+棋子类型识别时，每个点的裁剪区域是：
+
+```text
+以交叉点为中心
+半径 = crop_radius
+裁剪大小 = 2 * crop_radius + 1
+```
+
+`crop_radius` 由棋盘单格大小计算：
+
+```text
+crop_radius = min(单格宽, 单格高) * 0.48
+```
+
+所以它大约是一个接近“一格大小”的正方形。实际像素大小会写在 App 的提示区域里，例如：
+
+```text
+识别裁剪大小：81×81px
+```
 
 ## 常见问题
 
@@ -336,12 +360,14 @@ debug_outputs\bestmove_preview.png
 
 ```text
 debug_outputs\last_recognition_grid_preview.png
+debug_outputs\point_crops_preview.png
 debug_outputs\recognized_board.txt
 debug_outputs\match_details.txt
 ```
 
 如果红点偏离棋子中心，通常是棋盘裁剪或交叉点定位问题。  
-如果红点正确但棋子类型错，通常是模板质量或模板数量问题。
+如果红点正确但棋子类型错，继续看 `point_crops_preview.png`，确认送去识别的小图是否完整包含棋子。  
+如果小图没问题但类型仍错，通常是模板质量、模板数量或相似棋子模板竞争问题。
 
 ### 马和兵偶尔混淆
 

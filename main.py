@@ -4,6 +4,7 @@ import json
 import os
 import sys
 import importlib.util
+import shutil
 import time
 from pathlib import Path
 from typing import Any
@@ -63,6 +64,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+from PIL import Image, ImageDraw
 
 from board_cropper import auto_crop_board
 from board_recognizer import BoardRecognizer, board_to_debug_text, draw_geometry_preview
@@ -285,6 +287,8 @@ class MainWindow(QMainWindow):
         capture_debug_path = DEBUG_OUTPUT_DIR / "cropped_board.png"
         grid_debug_path = DEBUG_OUTPUT_DIR / "last_recognition_grid_preview.png"
         matrix_debug_path = DEBUG_OUTPUT_DIR / "recognized_board.txt"
+        point_crops_dir = DEBUG_OUTPUT_DIR / "point_crops"
+        point_crops_preview_path = DEBUG_OUTPUT_DIR / "point_crops_preview.png"
 
         try:
             DEBUG_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -310,6 +314,13 @@ class MainWindow(QMainWindow):
             )
             result = recognizer.recognize(board_image)
             draw_geometry_preview(board_image, result.geometry).save(grid_debug_path)
+            export_point_crops(
+                board_image,
+                result.geometry,
+                result.point_matches,
+                point_crops_dir,
+                point_crops_preview_path,
+            )
             self._set_preview_image(capture_debug_path)
         except Exception as exc:
             self._set_error(f"手动区域识别失败：{exc}")
@@ -326,7 +337,10 @@ class MainWindow(QMainWindow):
                 f"手动区域裁剪预览：{crop_preview_path}",
                 f"裁剪得到的棋盘图片：{capture_debug_path}",
                 f"本次交叉点预览：{grid_debug_path}",
+                f"棋子识别裁剪小图目录：{point_crops_dir}",
+                f"棋子识别裁剪总览：{point_crops_preview_path}",
                 f"识别出的棋盘矩阵：{matrix_debug_path}",
+                f"识别裁剪大小：{result.geometry.crop_radius * 2 + 1}×{result.geometry.crop_radius * 2 + 1}px",
                 f"自动裁剪得分：{crop_result.score:.2f}",
                 f"模板目录：{templates_dir}",
                 f"已加载模板数量：{result.loaded_template_count}",
@@ -349,6 +363,8 @@ class MainWindow(QMainWindow):
         capture_debug_path = DEBUG_OUTPUT_DIR / "cropped_board.png"
         grid_debug_path = DEBUG_OUTPUT_DIR / "last_recognition_grid_preview.png"
         matrix_debug_path = DEBUG_OUTPUT_DIR / "recognized_board.txt"
+        point_crops_dir = DEBUG_OUTPUT_DIR / "point_crops"
+        point_crops_preview_path = DEBUG_OUTPUT_DIR / "point_crops_preview.png"
 
         try:
             DEBUG_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -378,6 +394,13 @@ class MainWindow(QMainWindow):
             )
             result = recognizer.recognize(board_image)
             draw_geometry_preview(board_image, result.geometry).save(grid_debug_path)
+            export_point_crops(
+                board_image,
+                result.geometry,
+                result.point_matches,
+                point_crops_dir,
+                point_crops_preview_path,
+            )
             self._set_preview_image(capture_debug_path)
         except Exception as exc:
             self.show()
@@ -393,6 +416,9 @@ class MainWindow(QMainWindow):
         warnings.append(f"裁剪得到的棋盘图片：{capture_debug_path}")
         warnings.append(f"识别出的棋盘矩阵：{matrix_debug_path}")
         warnings.append(f"本次交叉点预览：{grid_debug_path}")
+        warnings.append(f"棋子识别裁剪小图目录：{point_crops_dir}")
+        warnings.append(f"棋子识别裁剪总览：{point_crops_preview_path}")
+        warnings.append(f"识别裁剪大小：{result.geometry.crop_radius * 2 + 1}×{result.geometry.crop_radius * 2 + 1}px")
         warnings.append(f"自动裁剪得分：{crop_result.score:.2f}")
         warnings.append(f"模板目录：{templates_dir}")
         warnings.append(f"已加载模板数量：{result.loaded_template_count}")
@@ -746,6 +772,60 @@ def clear_debug_outputs() -> None:
     for path in DEBUG_OUTPUT_DIR.iterdir():
         if path.is_file():
             path.unlink()
+        elif path.is_dir():
+            shutil.rmtree(path)
+
+
+def export_point_crops(
+    board_image,
+    geometry,
+    point_matches,
+    output_dir: Path,
+    preview_path: Path,
+) -> None:
+    output_dir.mkdir(parents=True, exist_ok=True)
+    crops: list[list[Image.Image]] = []
+    for row in range(10):
+        crop_row: list[Image.Image] = []
+        for col in range(9):
+            center_x, center_y = geometry.point(row, col)
+            crop = crop_pil_point(board_image, center_x, center_y, geometry.crop_radius)
+            match = point_matches[row][col]
+            piece_name = match.piece or "empty"
+            safe_piece_name = piece_name.replace("/", "_").replace("\\", "_")
+            filename = f"r{row:02d}_c{col:02d}_{safe_piece_name}_{match.score:.4f}.png"
+            crop.save(output_dir / filename)
+            crop_row.append(crop)
+        crops.append(crop_row)
+
+    _save_point_crops_preview(crops, point_matches, preview_path)
+
+
+def _save_point_crops_preview(crops, point_matches, preview_path: Path) -> None:
+    if not crops or not crops[0]:
+        return
+    crop_w, crop_h = crops[0][0].size
+    label_h = 20
+    gap = 4
+    width = 9 * crop_w + 10 * gap
+    height = 10 * (crop_h + label_h) + 11 * gap
+    preview = Image.new("RGB", (width, height), "white")
+    draw = ImageDraw.Draw(preview)
+
+    for row in range(10):
+        for col in range(9):
+            x = gap + col * (crop_w + gap)
+            y = gap + row * (crop_h + label_h + gap)
+            preview.paste(crops[row][col], (x, y))
+            match = point_matches[row][col]
+            label = f"r{row}c{col}"
+            if match.piece:
+                label += f" {match.piece.split('_')[-1]} {match.score:.2f}"
+            else:
+                label += f" . {match.score:.2f}"
+            draw.text((x, y + crop_h + 2), label, fill=(0, 0, 0))
+
+    preview.save(preview_path)
 
 
 def match_details_to_text(point_matches) -> str:

@@ -191,6 +191,83 @@ templates\_grid_preview.png
 
 注意：`make_templates_from_startpos.py` 只适合标准开局图。如果图片不是标准开局，它会把错误位置的棋子裁进模板。
 
+### 补充实战模板
+
+如果某个棋子经常识别错，可以从实际对局截图里补充模板。程序每次识别后会输出 90 个交叉点的小图：
+
+```text
+debug_outputs\point_crops
+```
+
+文件名类似：
+
+```text
+r02_c03_red_pawn_0.8123.png
+```
+
+含义是：
+
+```text
+r02_c03   第 3 行第 4 列
+red_pawn  当前被程序识别成红兵
+0.8123    匹配分数
+```
+
+如果这张图实际是红车，但程序识别成红兵，就把它复制到正确目录：
+
+```text
+templates\red_rook
+```
+
+例如：
+
+```text
+debug_outputs\point_crops\r02_c03_red_pawn_0.8123.png
+复制到：
+templates\red_rook\user_r02_c03_red_rook.png
+```
+
+如果实际是红马，就复制到：
+
+```text
+templates\red_knight
+```
+
+文件名不要求叫 `sample_03.png`。程序会加载对应棋子文件夹里的所有图片，只要扩展名是：
+
+```text
+.png
+.jpg
+.jpeg
+.bmp
+.webp
+```
+
+所以这些文件名都可以：
+
+```text
+templates\red_rook\sample_03.png
+templates\red_rook\user_r02_c03_red_rook.png
+templates\red_rook\实战红车1.png
+```
+
+关键是放进正确的棋子目录。程序根据文件夹判断棋子类型，不根据文件名判断棋子类型。
+
+不要把错误棋子的图片放进错误目录。例如，红车图片不要放到：
+
+```text
+templates\red_pawn
+```
+
+否则会让红兵模板变差，后续更容易误识别。
+
+补充模板后，重新运行识别，再检查：
+
+```text
+debug_outputs\recognized_board.txt
+debug_outputs\match_details.txt
+```
+
 ## 启动程序
 
 ```powershell
@@ -372,7 +449,8 @@ debug_outputs\match_details.txt
 ### 马和兵偶尔混淆
 
 当前识别仍然基于模板匹配。马和兵在某些截图、阴影、缩放条件下分数可能非常接近。  
-可以补充更多实际对局中裁出来的 `red_knight`、`red_pawn`、`black_knight`、`black_pawn` 模板。
+可以按“补充实战模板”的方法，补充更多实际对局中裁出来的 `red_knight`、`red_pawn`、`black_knight`、`black_pawn` 模板。  
+如果红车被误识别成红兵，也可以把实际红车小图补充到 `templates\red_rook`。
 
 ### Pikafish 提示 nnue 缺失
 

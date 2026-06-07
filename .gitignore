@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+
+.idea/
+.vscode/
+
+debug_outputs/
+
+engines/*
+!engines/.gitkeep
+
+*.log

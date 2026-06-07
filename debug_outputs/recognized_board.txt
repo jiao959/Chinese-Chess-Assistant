@@ -1,0 +1,10 @@
+. . . black_king . . . . .
+. . . . . . . . red_rook
+. . . black_advisor . . . . .
+. . . . . . . . .
+. . . . . . . . .
+. black_pawn . . . . . . red_pawn
+. . . . . . . . black_rook
+. . . . red_bishop . . . .
+. . . . . . . . .
+. . red_bishop red_advisor red_king red_advisor . . .

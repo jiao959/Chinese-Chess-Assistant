@@ -3,16 +3,16 @@
   "pikafish_eval_file": "engines/pikafish.nnue",
   "templates_dir": "templates",
   "last_board_region": {
-    "x": 248,
+    "x": 249,
     "y": 273,
-    "width": 787,
-    "height": 894
+    "width": 786,
+    "height": 895
   },
   "analysis_movetime_ms": 3000,
-  "analysis_mode": "movetime",
+  "analysis_mode": "depth",
   "analysis_depth": 20,
   "engine_threads": 8,
-  "engine_hash_mb": 1024,
+  "engine_hash_mb": 4096,
   "template_match_threshold": 0.38,
   "use_fixed_grid_padding": false,
   "grid_padding_ratio": {

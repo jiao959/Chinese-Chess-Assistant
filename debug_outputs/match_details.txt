@@ -1,0 +1,11 @@
+row=0, col=3, piece=black_king, score=0.8715, template=C:\Users\jh\Desktop\象棋辅助\templates\black_king\sample_01.png
+row=1, col=8, piece=red_rook, score=0.9260, template=C:\Users\jh\Desktop\象棋辅助\templates\red_rook\r02_c03_red_pawn_0.8269.png
+row=2, col=3, piece=black_advisor, score=0.8816, template=C:\Users\jh\Desktop\象棋辅助\templates\black_advisor\sample_01.png
+row=5, col=1, piece=black_pawn, score=0.8796, template=C:\Users\jh\Desktop\象棋辅助\templates\black_pawn\sample_05.png
+row=5, col=8, piece=red_pawn, score=0.9575, template=C:\Users\jh\Desktop\象棋辅助\templates\red_pawn\sample_04.png
+row=6, col=8, piece=black_rook, score=0.8250, template=C:\Users\jh\Desktop\象棋辅助\templates\black_rook\sample_02.png
+row=7, col=4, piece=red_bishop, score=0.8732, template=C:\Users\jh\Desktop\象棋辅助\templates\red_bishop\sample_02.png
+row=9, col=2, piece=red_bishop, score=0.9434, template=C:\Users\jh\Desktop\象棋辅助\templates\red_bishop\sample_02.png
+row=9, col=3, piece=red_advisor, score=0.9299, template=C:\Users\jh\Desktop\象棋辅助\templates\red_advisor\sample_01.png
+row=9, col=4, piece=red_king, score=0.9561, template=C:\Users\jh\Desktop\象棋辅助\templates\red_king\sample_01.png
+row=9, col=5, piece=red_advisor, score=0.9319, template=C:\Users\jh\Desktop\象棋辅助\templates\red_advisor\sample_02.png
